@@ -4,6 +4,10 @@ This is NOT meant to be run as a script top-to-bottom. Copy each `# --- Cell N -
 its own cell of a Jupyter notebook running on a SageMaker Notebook Instance / SageMaker
 Studio (kernel: "conda_pytorch_p310" or similar), and run them one at a time, in order.
 
+IMPORTANT: create that notebook at the repo root (the same folder that directly contains
+`sagemaker/` and `src/` as siblings) — the relative paths below (`source_dir="sagemaker"`,
+`dependencies=["src"]`) assume the notebook's working directory is the repo root.
+
 Prerequisites (see README.md "Task 6" section for the console click-path):
   - This whole repo uploaded/cloned onto the notebook instance, so `sagemaker/train.py`,
     `sagemaker/inference.py`, and `src/` are all present alongside this file.
@@ -27,7 +31,7 @@ print("Using role:", role)
 estimator = PyTorch(
     entry_point="train.py",
     source_dir="sagemaker",
-    dependencies=["../src"],          # bundles src/ alongside the entry point
+    dependencies=["src"],             # bundles src/ alongside the entry point
     role=role,
     framework_version="2.1",
     py_version="py310",
