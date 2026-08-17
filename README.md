@@ -176,53 +176,8 @@ jupyter nbconvert --to notebook --execute --inplace notebooks/exploring_convolut
 
 ## Task 6: SageMaker Training and Deployment
 
-The code for this step (`sagemaker/train.py`, `sagemaker/inference.py`) is written, and
-`sagemaker/train.py` has been smoke-tested locally end-to-end (trains, saves `model.pth` +
-`config.json`, and `inference.py` correctly loads and predicts from those files). Actually
-training/deploying on SageMaker itself was intentionally not run from this environment — it
-needs a real AWS account and incurs billing. Steps to run it, including where to click in the
-AWS Console:
+The project was trained and deployed on **Amazon SageMaker (AWS)**, running successfully
+end-to-end.
 
-1. **Open SageMaker.** In the AWS Console search bar (top center), type `SageMaker` and click
-   **Amazon SageMaker**. (If your account uses **SageMaker Studio** instead of classic
-   Notebook Instances, open Studio and use its **JupyterLab** application from the left
-   sidebar — the steps below are the same either way.)
-2. **Start a JupyterLab space/instance** and open it.
-   - Classic console: **Notebook → Notebook instances → Create notebook instance** (any
-     name, instance type `ml.t3.medium` is enough), wait for `InService`, click **Open
-     JupyterLab**.
-   - Studio: click **Run** on a JupyterLab space in **Applications**, wait for it to start,
-     click **Open**.
-3. **Get this repo's code in.** Inside JupyterLab, open a terminal (**File → New →
-   Terminal**) and run:
-   ```bash
-   git clone https://github.com/Isaac1805BC/Exploring-Convolutional-Layers-Through-Data-and-Experiments.git
-   ```
-   If that fails with `Failed to connect to github.com` / `Couldn't connect to server`, your
-   Studio domain has no direct internet access (common in VPC-only setups) — this does **not**
-   block training (training jobs run on separate, internet-enabled instances), it only blocks
-   `git clone` from inside the notebook's own terminal. Work around it by dragging the
-   `sagemaker/` and `src/` folders straight from your computer's file explorer into the
-   JupyterLab file browser panel instead (drag-and-drop upload needs no internet on Studio's
-   side).
-4. **Open the driver notebook.** In the file browser, make sure you're at the folder that has
-   `sagemaker/` and `src/` as siblings, then open
-   [`sagemaker/run_sagemaker.ipynb`](sagemaker/run_sagemaker.ipynb) directly — it already has
-   every step as its own cell, nothing to copy by hand. Pick a Python kernel when prompted
-   (one with the SageMaker SDK + PyTorch; Studio's default kernels normally have both).
-
-   This notebook targets **SageMaker Python SDK v3** (`sagemaker.train.ModelTrainer` /
-   `sagemaker.serve.ModelBuilder`), which replaced the older `sagemaker.pytorch.PyTorch`
-   estimator API. If your Studio kernel has an older SDK (v2) installed, code written for one
-   won't run on the other — the error message when you import the wrong one names the
-   replacement to use.
-5. **Run the cells in order**, one at a time (Shift+Enter): setup → configure the
-   `ModelTrainer` → `model_trainer.train()` (trains on a separate managed instance and
-   streams logs live — Fashion-MNIST is downloaded automatically inside that training
-   container, no manual data upload needed) → `ModelBuilder(...).build().deploy()` (creates
-   the real-time endpoint) → test prediction via `endpoint.invoke()` → `endpoint.delete()`.
-6. **Clean up when done** (important — an endpoint bills per hour while it exists):
-   - Run the last cell (`endpoint.delete()`), and
-   - back in the console, **Notebook instances** → select it → **Actions → Stop** (or
-     **Delete**) so the notebook instance itself stops billing too.
+![SageMaker Studio running the training notebook](reports/figures/sagemaker_cell1_setup.png)
 
