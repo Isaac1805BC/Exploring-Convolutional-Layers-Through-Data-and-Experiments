@@ -210,13 +210,19 @@ AWS Console:
    [`sagemaker/run_sagemaker.ipynb`](sagemaker/run_sagemaker.ipynb) directly — it already has
    every step as its own cell, nothing to copy by hand. Pick a Python kernel when prompted
    (one with the SageMaker SDK + PyTorch; Studio's default kernels normally have both).
-5. **Run the cells in order**, one at a time (Shift+Enter): setup → `estimator.fit()` (trains
-   on a separate managed instance and streams logs live — Fashion-MNIST is downloaded
-   automatically inside that training container, no manual data upload needed) →
-   `estimator.deploy()` (creates the real-time endpoint) → test prediction →
-   `predictor.delete_endpoint()`.
+
+   This notebook targets **SageMaker Python SDK v3** (`sagemaker.train.ModelTrainer` /
+   `sagemaker.serve.ModelBuilder`), which replaced the older `sagemaker.pytorch.PyTorch`
+   estimator API. If your Studio kernel has an older SDK (v2) installed, code written for one
+   won't run on the other — the error message when you import the wrong one names the
+   replacement to use.
+5. **Run the cells in order**, one at a time (Shift+Enter): setup → configure the
+   `ModelTrainer` → `model_trainer.train()` (trains on a separate managed instance and
+   streams logs live — Fashion-MNIST is downloaded automatically inside that training
+   container, no manual data upload needed) → `ModelBuilder(...).build().deploy()` (creates
+   the real-time endpoint) → test prediction via `endpoint.invoke()` → `endpoint.delete()`.
 6. **Clean up when done** (important — an endpoint bills per hour while it exists):
-   - Run the last cell (`predictor.delete_endpoint()`), and
+   - Run the last cell (`endpoint.delete()`), and
    - back in the console, **Notebook instances** → select it → **Actions → Stop** (or
      **Delete**) so the notebook instance itself stops billing too.
 
