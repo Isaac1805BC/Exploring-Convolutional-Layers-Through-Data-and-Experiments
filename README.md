@@ -36,7 +36,7 @@ simple to separate architectures on. It is also small enough to iterate on CPU w
 the focus on architecture rather than data-engineering (no streaming, no resizing needed —
 every image is already a uniform 28x28x1).
 
-**Preprocessing:** `ToTensor()` (scale to `[0, 1]`) + per-dataset mean/std normalization. No
+Preprocessing: `ToTensor()` (scale to `[0, 1]`) + per-dataset mean/std normalization. No
 resizing or color handling is needed (uniform size, single channel already).
 
 ## Architecture
@@ -89,10 +89,10 @@ executed run.
 | Model | Parameters | Test accuracy | Test loss |
 |---|---|---|---|
 | Baseline MLP | 235,146 | 88.10% | 0.338 |
-| CNN (3x3) | 206,922 | **90.17%** | 0.276 |
+| CNN (3x3) | 206,922 | 90.17% | 0.276 |
 
 (from `results/baseline_vs_cnn.csv`, 8 epochs each, same seed/split). The CNN reaches ~2.1
-points higher test accuracy than the baseline while using **fewer** trainable parameters, and
+points higher test accuracy than the baseline while using fewer trainable parameters, and
 its confusion matrix (`reports/figures/cnn_confusion_matrix.png` vs
 `baseline_confusion_matrix.png`) shows markedly less confusion among the visually similar
 upper-body classes (T-shirt/top, Shirt, Pullover, Coat).
@@ -113,7 +113,7 @@ optimizer, epochs, data split/seed).
 and `kernel_size_tradeoffs.png`.)
 
 **Trade-off:** parameters and training time grow **monotonically** with kernel size, as
-expected (`(k/3)^2` more weights per filter). Test accuracy does **not** — 5x5 edges out both
+expected (`(k/3)^2` more weights per filter). Test accuracy does not 5x5 edges out both
 3x3 and 7x7 in this single-seed run, and all three sit within ~1 percentage point of each
 other, which is small enough to plausibly be run-to-run noise rather than a systematic effect.
 The honest conclusion is that kernel size did not reliably move accuracy here, while it did
@@ -125,14 +125,14 @@ larger kernels bought no dependable accuracy advantage for their added cost.
 ## Interpretation
 
 **Why did convolution outperform (or not) the baseline?** The CNN's weight sharing lets one
-learned filter (e.g. a diagonal-edge detector) apply at every spatial position, so it doesn't
+learned filter e.g. a diagonal-edge detector apply at every spatial position, so it doesn't
 need to relearn the same pattern separately for every pixel offset the way the baseline's
 fully-connected first layer does. That's why it reaches higher accuracy with fewer parameters
 and confuses visually-similar classes less often — it represents "has this edge/texture
 pattern" rather than "these specific pixels are bright."
 
 **What inductive bias does convolution introduce?** Two combined priors: **locality** (a
-unit's output depends only on a small spatial neighborhood) and **translation equivariance**
+unit's output depends only on a small spatial neighborhood) and translation equivariance
 via weight sharing (the same filter is applied identically at every position, becoming
 approximate translation invariance once pooling is added). Both assume the data has local,
 position-independent structure — true for natural images, not a given elsewhere.
@@ -141,7 +141,7 @@ position-independent structure — true for natural images, not a given elsewher
 unordered tabular features (no meaningful "neighboring column" for a kernel to slide over),
 data where the same value means something different depending on its fixed position (weight
 sharing actively fights learning position-specific meaning), or long-range/irregular
-structure like language or graphs, where architectures matching *that* structure (attention,
+structure like language or graphs, where architectures matching that structure (attention,
 graph networks) fit the inductive bias better than a fixed spatial grid does.
 
 Full-length reasoning: see Section 6 of the notebook.
@@ -169,11 +169,6 @@ pip install -r requirements.txt
 jupyter nbconvert --to notebook --execute --inplace notebooks/exploring_convolutional_layers.ipynb
 ```
 
-## Task 6 (SageMaker) — Not Yet Done
+## Task 6 SageMaker
 
-Training in SageMaker and deploying to a SageMaker endpoint was intentionally left out of
-this repository: it requires an AWS account, an execution IAM role, and incurs real billing,
-none of which is set up in the environment this project was developed in. Everything needed
-to do it is already in place — `src/models.py` and `src/train.py` are plain PyTorch with no
-local-only assumptions, so they can be reused directly inside a SageMaker training entry
-point script.
+
