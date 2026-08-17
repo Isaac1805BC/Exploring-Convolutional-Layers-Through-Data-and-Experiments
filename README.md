@@ -86,23 +86,41 @@ executed run.
 
 ### Baseline vs. CNN
 
-See `results/baseline_vs_cnn.csv` and the training-curve / confusion-matrix figures in
-`reports/figures/` (`baseline_curves.png`, `baseline_confusion_matrix.png`, `cnn_curves.png`,
-`cnn_confusion_matrix.png`). The CNN reaches a higher test accuracy than the baseline with
-fewer trainable parameters, and its confusion matrix shows markedly less confusion among the
-visually similar upper-body classes (T-shirt/top, Shirt, Pullover, Coat).
+| Model | Parameters | Test accuracy | Test loss |
+|---|---|---|---|
+| Baseline MLP | 235,146 | 88.10% | 0.338 |
+| CNN (3x3) | 206,922 | **90.17%** | 0.276 |
+
+(from `results/baseline_vs_cnn.csv`, 8 epochs each, same seed/split). The CNN reaches ~2.1
+points higher test accuracy than the baseline while using **fewer** trainable parameters, and
+its confusion matrix (`reports/figures/cnn_confusion_matrix.png` vs
+`baseline_confusion_matrix.png`) shows markedly less confusion among the visually similar
+upper-body classes (T-shirt/top, Shirt, Pullover, Coat).
 
 ### Controlled experiment: kernel size (3x3 vs 5x5 vs 7x7)
 
 Everything except kernel size is held fixed (depth, filter counts, stride, `padding =
 kernel_size // 2` so spatial size is preserved before pooling, activation, pooling, dropout,
-optimizer, epochs, data split/seed). See `results/kernel_size_experiment.csv` and
-`reports/figures/kernel_size_curves.png` / `kernel_size_tradeoffs.png`.
+optimizer, epochs, data split/seed).
 
-**Trade-off:** larger kernels add parameters and training time roughly proportional to
-`kernel_size^2` per filter, without a proportional test-accuracy gain on this small,
-low-resolution dataset — two stacked 3x3 convolutions are already competitive with a single
-larger kernel while using fewer parameters (the classic argument for stacking small kernels).
+| Kernel | Parameters | Train time | Test accuracy |
+|---|---|---|---|
+| 3x3 | 206,922 | 119.3s | 90.07% |
+| 5x5 | 215,370 | 125.3s | **90.92%** |
+| 7x7 | 228,042 | 139.9s | 90.55% |
+
+(from `results/kernel_size_experiment.csv`; curves/bars in `reports/figures/kernel_size_curves.png`
+and `kernel_size_tradeoffs.png`.)
+
+**Trade-off:** parameters and training time grow **monotonically** with kernel size, as
+expected (`(k/3)^2` more weights per filter). Test accuracy does **not** — 5x5 edges out both
+3x3 and 7x7 in this single-seed run, and all three sit within ~1 percentage point of each
+other, which is small enough to plausibly be run-to-run noise rather than a systematic effect.
+The honest conclusion is that kernel size did not reliably move accuracy here, while it did
+reliably move cost — combined with the standard argument that two stacked 3x3 convolutions
+reach the same effective receptive field as one 5x5 with fewer parameters, that makes **3x3
+the sensible default** for this problem size: not because it measurably won, but because
+larger kernels bought no dependable accuracy advantage for their added cost.
 
 ## Interpretation
 
